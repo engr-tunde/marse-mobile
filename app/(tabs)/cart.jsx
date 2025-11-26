@@ -18,6 +18,7 @@ import {
 import AntDesign from "@expo/vector-icons/AntDesign";
 import Entypo from "@expo/vector-icons/Entypo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import {
@@ -41,6 +42,12 @@ export default function CartOrder() {
   const glStyles = globalStyles();
   const { getFromCart, deleteCartItem } = useCartContext();
   const router = useRouter();
+  const [refetch, setRefetch] = useState(false);
+  const isFocused = useIsFocused();
+
+  // useEffect(() => {
+  //   setRefetch(!refetch);
+  // }, [isFocused]);
 
   useEffect(() => {
     const fetchCartData = async () => {
@@ -53,7 +60,7 @@ export default function CartOrder() {
       }
     };
     fetchCartData();
-  }, [getFromCart]);
+  }, [getFromCart, refetch, isFocused]);
 
   const calculateTotalPrice = () =>
     cartItems?.items?.reduce(
@@ -62,6 +69,7 @@ export default function CartOrder() {
     );
 
   const totalPrice = calculateTotalPrice();
+  // const totalPrice = 300;
 
   const handleOrderIntent = async () => {
     setsubmitting(true);
@@ -73,6 +81,7 @@ export default function CartOrder() {
         const res = await addOrderIntent({
           totalAmount: cartItems?.summary?.subtotal,
         });
+        console.log("res", res?.data);
         if (res?.status?.toString().includes("20")) {
           const clientSecret = String(res?.data?.clientSecret);
           router.push({
@@ -104,7 +113,9 @@ export default function CartOrder() {
       // Case 2: Delete all selected
       await Promise.all(
         selectedIds.map(async (pid) => {
-          const itemToDelete = cartItems.find((i) => i.productId === pid);
+          const itemToDelete = cartItems?.items.find(
+            (i) => i.productId === pid
+          );
           if (itemToDelete) {
             await deleteCartItem(
               itemToDelete.productId,
@@ -116,9 +127,13 @@ export default function CartOrder() {
       );
 
       // Update UI after deletion
-      setCartItems((prev) =>
-        prev.filter((item) => !selectedIds.includes(item.productId))
-      );
+      // setCartItems((prev) => {
+      //   let its = prev?.items.filter(
+      //     (item) => !selectedIds.includes(item.productId)
+      //   );
+      //   return { items: its };
+      // });
+      setRefetch(!refetch);
       setSelected({});
       successNotification("Selected items deleted successfully.");
     } catch (error) {
@@ -133,22 +148,28 @@ export default function CartOrder() {
 
   const updateQuantity = async (productId, newQuantity) => {
     if (newQuantity < 1) return;
-    const updatedItem = cartItems.find((item) => item.productId === productId);
+    const updatedItem = cartItems?.items.find(
+      (item) => item.productId === productId
+    );
     if (!updatedItem) return;
 
     try {
-      setCartItems((prev) =>
-        prev.map((item) =>
-          item.productId === productId
-            ? { ...item, quantity: newQuantity }
-            : item
-        )
-      );
+      // setCartItems((prev) => {
+      //   let its = prev?.items.map((item) =>
+      //     item.productId === productId
+      //       ? { ...item, quantity: newQuantity }
+      //       : item
+      //   );
+      //   return {
+      //     items: its,
+      //   };
+      // });
 
       await updateCart({
         productId: updatedItem.productId,
         quantity: newQuantity,
       });
+      setRefetch(!refetch);
     } catch (error) {
       console.error(error);
       errorNotification("Failed to update quantity");
@@ -156,12 +177,12 @@ export default function CartOrder() {
   };
 
   const addQuantity = (productId) => {
-    const item = cartItems.find((item) => item.productId === productId);
+    const item = cartItems?.items.find((item) => item.productId === productId);
     if (item) updateQuantity(productId, item.quantity + 1);
   };
 
   const removeQuantity = (productId) => {
-    const item = cartItems.find((item) => item.productId === productId);
+    const item = cartItems?.items.find((item) => item.productId === productId);
     if (item && item.quantity > 1) updateQuantity(productId, item.quantity - 1);
   };
 
@@ -231,7 +252,7 @@ export default function CartOrder() {
           />
           <ThemedText style={styles.headerText}>Cart</ThemedText>
           <Pressable onPress={() => setShowDeleteModal(true)}>
-            {cartItems.length ? (
+            {cartItems?.items?.length ? (
               <Image source={delete_Icon} resizeMode="contain" />
             ) : (
               <View />
@@ -254,7 +275,7 @@ export default function CartOrder() {
         />
 
         {/* Cart List */}
-        {cartItems.length === 0 ? (
+        {cartItems?.items?.length === 0 ? (
           <EmptyCart />
         ) : (
           <>
