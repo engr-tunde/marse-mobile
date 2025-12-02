@@ -131,7 +131,7 @@ export default function Checkout() {
 
     const orderPayload = {
       clientSecret,
-      items: cart.map((item) => ({
+      items: cart?.map((item) => ({
         productId: item.productId,
         sellerId: item.sellerId,
         productName: item.productName,

@@ -158,7 +158,7 @@ export default function ProductScreen() {
       <Animatable.View
         style={{
           borderBottomColor: !isActive && theme.placeholder,
-          borderBottomWidth: !isActive && 0.5,
+          borderBottomWidth: 0.5,
           borderRadius: isActive && 10,
           paddingBottom: 3,
           marginTop: 20,

@@ -72,9 +72,10 @@ export default function RootLayout() {
               <WishListProvider>
                 <GlobalProvider>
                   <StripeProvider
-                    publishableKey={process.env.EXPO_PUBLIC_STRIPE_KEY}
-                    merchantIdentifier="merchant.identifier" // required for Apple Pay
-                    // urlScheme="your-url-scheme" // required for 3D Secure and bank redirects
+                    // publishableKey={process.env.EXPO_PUBLIC_STRIPE_KEY}
+                    publishableKey="pk_test_51RW2LvE8v5Iger8qmrxK6kRS0L3PzEzDEGnEhy7WjonjNGW3dl0fWTjFxbvH04ozzC6wEcDemK49LMXaOxeVcK8Q00JPXEPwgz"
+                    merchantIdentifier="merchant.com.<my-app>" // required for Apple Pay
+                    urlScheme="your-url-scheme" // required for 3D Secure and bank redirects
                   >
                     <Stack>
                       <Stack.Screen
