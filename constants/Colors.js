@@ -14,6 +14,7 @@ export const Colors = {
     placeholder: "#777",
     iconColor: "#686477",
     iconColorFocused: "#201e2b",
+    shadowColor: "#aaa",
   },
   dark: {
     uiBackground: "#000",
@@ -30,5 +31,6 @@ export const Colors = {
     placeholder: "#bbbb",
     iconColor: "#9591a5",
     iconColorFocused: "#fff",
+    shadowColor: "#555",
   },
 };

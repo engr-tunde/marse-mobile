@@ -4,6 +4,7 @@ import EmptyCart from "@/component/emptyCart";
 import ConfirmModal from "@/component/global/DeleteModal";
 import ThemedText from "@/component/global/ThemedText";
 import ThemedTextOpposite from "@/component/global/ThemedTextOpposite";
+import ThemedView from "@/component/global/ThemedView";
 import ThemedViewOpposite from "@/component/global/ThemedViewOpposite";
 import { Colors } from "@/constants/Colors";
 import { useCartContext } from "@/contexts/CartContext";
@@ -16,7 +17,6 @@ import {
   successNotification,
 } from "@/utils/helpers";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import Entypo from "@expo/vector-icons/Entypo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useIsFocused } from "@react-navigation/native";
 import { useRouter } from "expo-router";
@@ -187,50 +187,65 @@ export default function CartOrder() {
   };
 
   const CartItem = ({ item }) => (
-    <ThemedViewOpposite
-      style={[styles.cartBox, { backgroundColor: theme.cardBackground }]}
-    >
+    <ThemedView style={[styles.cartBox, { shadowColor: theme.shadowColor }]}>
       <Pressable
         onPress={() => toggleSelect(item.productId)}
         style={[
           styles.circleCheckbox,
-          selected[item.productId] && styles.circleCheckboxSelected,
+          { borderColor: theme.title },
+          selected[item.productId] && {
+            borderColor: theme.title,
+            // backgroundColor: theme.navBackground,
+          },
         ]}
       >
-        {selected[item.productId] && <View style={styles.innerCircle} />}
+        {selected[item.productId] && (
+          <View
+            style={[styles.innerCircle, { backgroundColor: theme.title }]}
+          />
+        )}
       </Pressable>
 
-      <Image source={{ uri: item.image }} style={styles.productImage} />
+      <Pressable onPress={() => toggleSelect(item.productId)}>
+        <Image source={{ uri: item.image }} style={styles.productImage} />
+      </Pressable>
 
-      <ThemedViewOpposite
-        style={[
-          styles.productDetails,
-          { backgroundColor: theme.cardBackground },
-        ]}
-      >
+      <View style={[styles.productDetails]}>
         <ThemedText style={styles.productName}>{item.productName}</ThemedText>
-        <ThemedTextOpposite style={styles.brand}>
+        <ThemedText type="text" style={styles.brand}>
           {item.brandName}
-        </ThemedTextOpposite>
-        <ThemedText style={styles.price}>${item.price}</ThemedText>
+        </ThemedText>
 
-        <View style={styles.quantityControls}>
-          <Entypo
-            name="minus"
-            size={22}
-            color={theme.text}
-            onPress={() => removeQuantity(item.productId)}
-          />
-          <ThemedText style={styles.quantityText}>{item.quantity}</ThemedText>
-          <Entypo
-            name="plus"
-            size={22}
-            color={theme.text}
-            onPress={() => addQuantity(item.productId)}
-          />
+        <View
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 10,
+          }}
+        >
+          <ThemedText style={styles.price}>
+            {currencyFormatter(item.price)}
+          </ThemedText>
+          <View style={styles.quantityControls}>
+            <AntDesign
+              name="minus-circle"
+              size={20}
+              color={theme.text}
+              onPress={() => removeQuantity(item.productId)}
+            />
+            <ThemedText style={styles.quantityText}>{item.quantity}</ThemedText>
+            <AntDesign
+              name="plus-circle"
+              size={20}
+              color={theme.text}
+              onPress={() => addQuantity(item.productId)}
+            />
+          </View>
         </View>
-      </ThemedViewOpposite>
-    </ThemedViewOpposite>
+      </View>
+    </ThemedView>
   );
 
   return (
@@ -242,8 +257,8 @@ export default function CartOrder() {
         barStyle={currentTheme === "dark" ? "light-content" : "dark-content"}
       />
 
-      <View style={[glStyles.containerInner, styles.container]}>
-        <View style={styles.header}>
+      <View style={[styles.container]}>
+        <View style={[styles.header]}>
           <AntDesign
             name="arrow-left"
             size={24}
@@ -288,8 +303,8 @@ export default function CartOrder() {
               renderItem={({ item }) => <CartItem item={item} />}
               ListFooterComponent={
                 <>
-                  <View style={[styles.footer, { marginBottom: 13 }]}>
-                    <ThemedText>Total</ThemedText>
+                  <View style={[styles.footer]}>
+                    <ThemedText style={{ fontSize: 19 }}>Total</ThemedText>
                     <ThemedText style={styles.totalAmount}>
                       {cartItems?.summary?.subtotal
                         ? currencyFormatter(cartItems?.summary?.subtotal)
@@ -323,6 +338,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    paddingHorizontal: 5,
   },
   headerText: {
     fontSize: 18,
@@ -338,32 +354,27 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     borderRadius: 12,
     padding: 12,
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
+    marginBottom: 10,
+    borderRadius: 8,
     shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
+    shadowOpacity: 0.4,
+    shadowRadius: 7.84,
     elevation: 1,
+    margin: 10,
   },
   circleCheckbox: {
     width: 20,
     height: 20,
     borderRadius: 12,
     borderWidth: 2,
-    borderColor: "#000",
     alignItems: "center",
     justifyContent: "center",
     marginRight: 10,
-  },
-  circleCheckboxSelected: {
-    borderColor: "#000",
-    backgroundColor: "#0002",
   },
   innerCircle: {
     width: 10,
     height: 10,
     borderRadius: 6,
-    backgroundColor: "#000",
   },
   productImage: {
     width: 80,
@@ -380,12 +391,11 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   brand: {
-    color: "#999",
     fontSize: 13,
   },
   price: {
     fontSize: 15,
-    fontWeight: "600",
+    fontWeight: 600,
     marginVertical: 4,
   },
   quantityControls: {
@@ -397,17 +407,18 @@ const styles = StyleSheet.create({
   },
   quantityText: {
     fontSize: 16,
-    fontWeight: "600",
+    fontWeight: 600,
   },
   footer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginTop: 10,
+    marginVertical: 25,
+    paddingHorizontal: 10,
   },
   totalAmount: {
     fontSize: 20,
-    fontWeight: "600",
+    fontWeight: 600,
   },
   checkoutButton: {
     alignItems: "center",

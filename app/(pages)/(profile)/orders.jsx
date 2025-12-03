@@ -3,6 +3,7 @@ import { blackBox, product as defaultImage, whiteBox } from "@/assets/images";
 import ThemedLoader from "@/component/global/ThemedLoader";
 import ThemedText from "@/component/global/ThemedText";
 import ThemedTextOpposite from "@/component/global/ThemedTextOpposite";
+import ThemedView from "@/component/global/ThemedView";
 import ThemedViewOpposite from "@/component/global/ThemedViewOpposite";
 import { Colors } from "@/constants/Colors";
 import { useOrdersContext } from "@/contexts/OrderContext";
@@ -105,7 +106,7 @@ export default function ConfirmOrder() {
             <ThemedText style={{ fontSize: 24, marginTop: 20 }}>
               0 items found
             </ThemedText>
-            <ThemedText style={{ color: "#aaa", textAlign: "center" }}>
+            <ThemedText type="subtext" style={{ textAlign: "center" }}>
               Nothing here yet — time to shop your next look
             </ThemedText>
             <Pressable onPress={() => router.push("/arrival")}>
@@ -121,11 +122,11 @@ export default function ConfirmOrder() {
             // renderItem={renderOrderItem}
             renderItem={({ item }) => {
               return (
-                <View
+                <ThemedView
                   style={[
                     styles.backgroundContainer,
                     {
-                      backgroundColor: theme.cardBackground,
+                      shadowColor: theme.shadowColor,
                     },
                   ]}
                   // key={id}
@@ -139,7 +140,13 @@ export default function ConfirmOrder() {
                     </ThemedText>
                   </View>
 
-                  <View style={{ flexDirection: "row", marginTop: 10 }}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      marginTop: 10,
+                      alignItems: "center",
+                    }}
+                  >
                     <Image
                       source={
                         item?.items[0]?.image
@@ -196,7 +203,7 @@ export default function ConfirmOrder() {
                       </Pressable>
                     </View>
                   </View>
-                </View>
+                </ThemedView>
               );
             }}
             contentContainerStyle={{
@@ -225,10 +232,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   backgroundContainer: {
-    width: "100%",
+    // width: "100%",
     borderRadius: 8,
     padding: 16,
     marginTop: 16,
+    borderRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 7.84,
+    elevation: 1,
+    margin: 10,
   },
   orderHeader: {
     flexDirection: "row",
@@ -243,8 +256,8 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   productImage: {
-    width: 100,
-    height: 100,
+    width: 80,
+    height: 80,
     resizeMode: "cover",
     borderRadius: 8,
     marginRight: 10,
@@ -275,7 +288,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: 10,
     marginTop: 10,
-    borderRadius: 6,
   },
   boxImage: {
     width: 120,

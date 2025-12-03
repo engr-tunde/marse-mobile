@@ -4,10 +4,10 @@ import NormalText from "@/component/global/NormalText";
 import ThemedAddressOpposite from "@/component/global/ThemeAddressOpposite";
 import ThemedText from "@/component/global/ThemedText";
 import ThemedTextOpposite from "@/component/global/ThemedTextOpposite";
+import ThemedView from "@/component/global/ThemedView";
 import ThemedViewOpposite from "@/component/global/ThemedViewOpposite";
 import { Colors } from "@/constants/Colors";
 import { useCartContext } from "@/contexts/CartContext";
-import { userUserContext } from "@/contexts/UserContext";
 import { useTheme } from "@/hooks/useTheme";
 import { globalStyles } from "@/styles/global";
 import {
@@ -36,8 +36,8 @@ export default function Checkout() {
   const theme = Colors[currentTheme] ?? Colors.light;
   const { clientSecret } = useLocalSearchParams();
   const glStyles = globalStyles();
+  const { clearCartItems } = useCartContext();
   const [selected, setSelected] = useState({});
-  const [cart, setCart] = useState([]);
   const [shippingAddress, setshippingAddress] = useState();
   const router = useRouter();
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -58,38 +58,14 @@ export default function Checkout() {
     setSelected((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  const [cartItems, setCartItems] = useState([]);
-  const [totalPrice, settotalPrice] = useState(0);
+  const [cartItems, setCartItems] = useState();
   const { cartData, cartLoading } = fetchCart();
 
   useEffect(() => {
     if (cartData?.items) {
       setCartItems(cartData.items);
-      const calculateTotalPrice = () =>
-        cartData?.items.reduce(
-          (acc, item) => acc + (item.price || 0) * (item.quantity || 0),
-          0
-        );
-      // const calculateDiscount= () =>
-      //   cartData?.items.reduce(
-      //     (acc, item) => acc + (item.price || 0) * (item.quantity || 0),
-      //     0
-      //   );
-      const tp = calculateTotalPrice();
-      settotalPrice(tp);
     }
   }, [cartData]);
-
-  const { getFromCart, clearCartItems } = useCartContext();
-  const { getFromUser } = userUserContext();
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const cartResponse = await getFromCart();
-      setCart(cartResponse);
-    };
-    fetchData();
-  }, []);
 
   const setup = async () => {
     const { error } = await initPaymentSheet({
@@ -124,14 +100,14 @@ export default function Checkout() {
   };
 
   const handleItemOrder = async () => {
-    if (!cart || cart.length === 0) {
+    if (!cartItems || cartItems.length === 0) {
       console.log("Cart is empty. Cannot place order.");
       return;
     }
 
     const orderPayload = {
       clientSecret,
-      items: cart?.map((item) => ({
+      items: cartItems?.map((item) => ({
         productId: item.productId,
         sellerId: item.sellerId,
         productName: item.productName,
@@ -170,8 +146,8 @@ export default function Checkout() {
         backgroundColor={currentTheme === "dark" ? "#000" : "#fff"}
         barStyle={currentTheme === "dark" ? "light-content" : "dark-content"}
       />
-      <View style={[glStyles.containerInner, styles.container]}>
-        <View style={styles.header}>
+      <View style={[styles.container]}>
+        <View style={[styles.header, { paddingHorizontal: 15 }]}>
           <Pressable onPress={() => router.back()}>
             <AntDesign name="arrow-left" size={22} color={theme.title} />
           </Pressable>
@@ -181,10 +157,12 @@ export default function Checkout() {
 
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: 64, gap: 20 }}
+          contentContainerStyle={{ gap: 10 }}
         >
           {/* Box container */}
-          <ThemedAddressOpposite style={styles.addressBox}>
+          <ThemedView
+            style={[styles.addressBox, { shadowColor: theme.shadowColor }]}
+          >
             {shippingAddress ? (
               <>
                 <View
@@ -258,18 +236,28 @@ export default function Checkout() {
                 </Pressable>
               </>
             )}
-          </ThemedAddressOpposite>
-          <ThemedText style={{ fontSize: 20, fontWeight: 600 }}>
+          </ThemedView>
+
+          <ThemedText
+            style={{
+              fontSize: 18,
+              fontWeight: 600,
+              paddingHorizontal: 20,
+              marginBottom: -10,
+            }}
+          >
             Your Items
           </ThemedText>
 
-          {cartItems.map(
-            (item) => (
-              console.log(item.price),
-              (
-                <View
+          <View style={{ marginBottom: 10, paddingHorizontal: 10 }}>
+            {cartItems &&
+              cartItems?.map((item) => (
+                <ThemedView
                   key={item._id.toString()}
-                  style={styles.backgroundContainer}
+                  style={[
+                    styles.backgroundContainer,
+                    { shadowColor: theme.shadowColor },
+                  ]}
                 >
                   <Image
                     source={{ uri: item.image }}
@@ -279,11 +267,13 @@ export default function Checkout() {
                     <ThemedText style={styles.productName}>
                       {item.productName}
                     </ThemedText>
-                    <ThemedText style={styles.brand}>
+                    <ThemedText style={[styles.brand, { color: theme.text }]}>
                       {item.brandName}
                     </ThemedText>
-                    <ThemedText style={styles.price}>{item.price}</ThemedText>
                     <View style={styles.quantityControls}>
+                      <ThemedText style={styles.price}>
+                        {currencyFormatter(item.price)}
+                      </ThemedText>
                       <ThemedText
                         style={[
                           styles.quantity,
@@ -294,161 +284,197 @@ export default function Checkout() {
                       </ThemedText>
                     </View>
                   </View>
-                </View>
-              )
-            )
-          )}
+                </ThemedView>
+              ))}
+          </View>
 
-          <View style={{ gap: 10 }}>
-            <ThemedAddressOpposite style={styles.paymentBox}>
-              <Image source={stripe} />
-              <Pressable
-                onPress={() => toggleSelect(cartItems._id)}
+          <View style={{ display: "flex", marginHorizontal: 26, gap: 25 }}>
+            <ThemedText
+              style={{
+                fontSize: 17,
+                fontWeight: 500,
+                marginBottom: -15,
+              }}
+            >
+              Available payment methods
+            </ThemedText>
+            <View style={{ gap: 10 }}>
+              <ThemedAddressOpposite
                 style={[
-                  styles.circleCheckbox,
-                  selected[cartItems._id] && styles.circleCheckboxSelected,
+                  styles.paymentBox,
+                  { borderColor: theme.navBackground },
                 ]}
               >
-                {selected[cartItems._id] && <View style={styles.innerCircle} />}
-              </Pressable>
-              <ThemedText style={{ fontSize: 16, fontWeight: 600 }}>
-                Stripe
-              </ThemedText>
-            </ThemedAddressOpposite>
-            <ThemedAddressOpposite style={styles.paymentBox}>
-              <Image source={flutterwave} />
-            </ThemedAddressOpposite>
-            <ThemedAddressOpposite style={styles.paymentBox}>
-              <Image source={paystack} />
-              <ThemedText style={{ fontSize: 16, fontWeight: 600 }}>
-                Paystack
-              </ThemedText>
-            </ThemedAddressOpposite>
-          </View>
+                <Image source={stripe} />
+                <Pressable
+                  onPress={() => toggleSelect(cartItems._id)}
+                  style={[
+                    styles.circleCheckbox,
+                    // selected[cartItems._id] && styles.circleCheckboxSelected,
+                  ]}
+                >
+                  <View style={styles.innerCircle} />
+                  {/* {selected[cartItems._id] && <View style={styles.innerCircle} />} */}
+                </Pressable>
+                <ThemedText style={{ fontSize: 16 }}>Stripe</ThemedText>
+              </ThemedAddressOpposite>
+              <ThemedAddressOpposite
+                style={[
+                  styles.paymentBox,
+                  { borderColor: theme.navBackground },
+                ]}
+              >
+                <Image source={flutterwave} />
+              </ThemedAddressOpposite>
+              <ThemedAddressOpposite
+                style={[
+                  styles.paymentBox,
+                  { borderColor: theme.navBackground },
+                ]}
+              >
+                <Image source={paystack} />
+                <ThemedText style={{ fontSize: 16 }}>Paystack</ThemedText>
+              </ThemedAddressOpposite>
+            </View>
 
-          {/* Optional code */}
-          <ThemedText style={{ fontSize: 18, fontWeight: 600 }}>
-            Discount code (Optional)
-          </ThemedText>
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <TextInput
-              placeholder="Enter discount code"
-              placeholderTextColor={theme.title}
+            {/* Optional code */}
+            <ThemedText
+              style={{ fontSize: 17, fontWeight: 500, marginBottom: -15 }}
+            >
+              Discount code (Optional)
+            </ThemedText>
+            <View
               style={{
-                borderWidth: 1,
-                borderColor: "#ddd",
-                borderRadius: 8,
-                padding: 16,
-                color: theme.title,
-                width: "55%",
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <TextInput
+                placeholder="Enter discount code"
+                placeholderTextColor={theme.subtext}
+                style={{
+                  borderWidth: 1,
+                  borderColor: theme.shadowColor,
+                  borderRadius: 3,
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  color: theme.subtext,
+                  width: "70%",
+                  placeholderTextColor: theme.subtext,
+                  fontSize: 16,
+                }}
+              />
+              <Pressable style={{ width: "25%" }}>
+                <ThemedViewOpposite style={[styles.loginButton]}>
+                  <ThemedTextOpposite>Apply</ThemedTextOpposite>
+                </ThemedViewOpposite>
+              </Pressable>
+            </View>
+          </View>
+          {/* Order summary */}
+          <ThemedView
+            style={[
+              styles.summaryContainer,
+              { shadowColor: theme.shadowColor },
+            ]}
+          >
+            <ThemedText
+              type="subtext"
+              style={{ fontSize: 20, fontWeight: 600 }}
+            >
+              Order Summary
+            </ThemedText>
+            <View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginBottom: 10,
+                }}
+              >
+                <ThemedText type="text" style={{ fontSize: 15 }}>
+                  Total
+                </ThemedText>
+                <ThemedText style={{ fontSize: 16, fontWeight: 600 }}>
+                  {currencyFormatter(cartData?.summary?.total)}
+                </ThemedText>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginBottom: 10,
+                }}
+              >
+                <ThemedText type="text" style={{ fontSize: 15 }}>
+                  Shipping fee
+                </ThemedText>
+                <ThemedText style={{ fontSize: 16, fontWeight: 600 }}>
+                  {currencyFormatter(cartData?.summary?.shippingFee)}
+                </ThemedText>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginBottom: 10,
+                }}
+              >
+                <ThemedText type="text" style={{ fontSize: 15 }}>
+                  Discount
+                </ThemedText>
+                <ThemedText style={{ fontSize: 16, fontWeight: 600 }}>
+                  {currencyFormatter(cartData?.summary?.discount)}
+                </ThemedText>
+              </View>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  marginBottom: 10,
+                }}
+              >
+                <ThemedText type="text" style={{ fontSize: 15 }}>
+                  Tax
+                </ThemedText>
+                <ThemedText style={{ fontSize: 16, fontWeight: 600 }}>
+                  {currencyFormatter(cartData?.summary?.tax)}
+                </ThemedText>
+              </View>
+            </View>
+
+            <View
+              style={{
+                borderBottomWidth: 0.5,
+                borderBottomColor: "gray",
+                width: "100%",
+                marginTop: 4,
               }}
             />
-            <Pressable>
-              <ThemedViewOpposite
-                style={[styles.loginButton, { width: "100%" }]}
-              >
-                <ThemedTextOpposite>Apply</ThemedTextOpposite>
+
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                marginBottom: 10,
+              }}
+            >
+              <ThemedText type="text" style={{ fontSize: 20, fontWeight: 700 }}>
+                Total
+              </ThemedText>
+              <ThemedText style={{ fontWeight: 600, fontSize: 19 }}>
+                {currencyFormatter(cartData?.summary?.subtotal)}
+              </ThemedText>
+            </View>
+            <Pressable onPress={() => handleCheckout()}>
+              <ThemedViewOpposite style={styles.loginButton}>
+                <ThemedTextOpposite style={{ fontSize: 16 }}>
+                  Pay
+                </ThemedTextOpposite>
               </ThemedViewOpposite>
             </Pressable>
-          </View>
-
-          {/* Order summary */}
-          <NormalText
-            style={{ fontSize: 20, fontWeight: 600, color: "#575757" }}
-          >
-            Order Summary
-          </NormalText>
-          <View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 10,
-              }}
-            >
-              <NormalText style={{ color: "#575757" }}>Total</NormalText>
-              <NormalText style={{ color: theme.title, fontWeight: 600 }}>
-                {currencyFormatter(cartData?.summary?.total)}
-              </NormalText>
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 10,
-              }}
-            >
-              <NormalText style={{ color: "#575757" }}>Shipping fee</NormalText>
-              <NormalText style={{ color: theme.title, fontWeight: 600 }}>
-                {currencyFormatter(cartData?.summary?.shippingFee)}
-              </NormalText>
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 10,
-              }}
-            >
-              <NormalText style={{ color: "#575757" }}>Discount</NormalText>
-              <NormalText style={{ color: theme.title, fontWeight: 600 }}>
-                -{currencyFormatter(cartData?.summary?.discount)}
-              </NormalText>
-            </View>
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                marginBottom: 10,
-              }}
-            >
-              <NormalText style={{ color: "#575757" }}>Tax:</NormalText>
-              <NormalText style={{ color: theme.title, fontWeight: 600 }}>
-                {currencyFormatter(cartData?.summary?.tax)}
-              </NormalText>
-            </View>
-          </View>
-
-          <View
-            style={{
-              borderBottomWidth: 0.5,
-              borderBottomColor: "gray",
-              width: "100%",
-              marginTop: 4,
-            }}
-          />
-
-          <View
-            style={{
-              flexDirection: "row",
-              justifyContent: "space-between",
-              marginBottom: 10,
-            }}
-          >
-            <NormalText
-              style={{ color: "#575757", fontSize: 20, fontWeight: 700 }}
-            >
-              Total
-            </NormalText>
-            <NormalText
-              style={{ color: theme.title, fontWeight: 700, fontSize: 18 }}
-            >
-              {currencyFormatter(cartData?.summary?.subtotal)}
-            </NormalText>
-          </View>
-          <Pressable onPress={() => handleCheckout()}>
-            <ThemedViewOpposite style={styles.loginButton}>
-              <ThemedTextOpposite style={{ fontSize: 18 }}>
-                Pay
-              </ThemedTextOpposite>
-            </ThemedViewOpposite>
-          </Pressable>
+          </ThemedView>
         </ScrollView>
       </View>
     </SafeAreaView>
@@ -457,8 +483,8 @@ export default function Checkout() {
 
 const styles = StyleSheet.create({
   container: {
-    paddingHorizontal: 20,
-    gap: 28,
+    // paddingHorizontal: 20,
+    gap: 2,
   },
   header: {
     flexDirection: "row",
@@ -471,16 +497,17 @@ const styles = StyleSheet.create({
     fontWeight: 600,
   },
   addressBox: {
-    width: "100%",
+    // width: "100%",
     // height: 150,
     paddingVertical: 10,
     paddingHorizontal: 10,
     gap: 10,
     borderRadius: 8,
-    // shadowOffset: { width: 0, height: 2 },
-    // shadowOpacity: 0.25,
-    // shadowRadius: 3.84,
-    // elevation: 1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 7.84,
+    elevation: 1,
+    margin: 20,
   },
   miniBox: {
     flexDirection: "row",
@@ -492,16 +519,23 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   backgroundContainer: {
+    // width: "100%",
     flexDirection: "row",
-    // backgroundColor: "#fff",
-    width: "100%",
+    alignItems: "center",
+    gap: 20,
     height: 120,
     borderRadius: 8,
     padding: 10,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 7.84,
+    elevation: 1,
+    margin: 15,
+    marginBottom: 10,
   },
   productImage: {
-    width: 100,
-    height: "100%",
+    width: 80,
+    height: 80,
     resizeMode: "cover",
     borderRadius: 8,
     marginRight: 10,
@@ -512,21 +546,21 @@ const styles = StyleSheet.create({
   },
   productName: {
     fontSize: 16,
-    fontWeight: 600,
+    fontWeight: 500,
+    marginBottom: 5,
   },
   brand: {
-    color: "#aaa",
     fontSize: 14,
-  },
-  price: {
-    fontSize: 16,
-    fontWeight: 600,
   },
   quantityControls: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 10,
+    justifyContent: "space-between",
+    marginTop: 10,
+  },
+  price: {
+    fontSize: 17,
+    fontWeight: 600,
   },
   quantity: {
     marginHorizontal: 6,
@@ -534,17 +568,30 @@ const styles = StyleSheet.create({
   paymentBox: {
     flexDirection: "row",
     width: "100%",
-    // height: 150,
-    paddingVertical: 16,
-    paddingHorizontal: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 17,
     gap: 10,
-    borderRadius: 8,
+    borderRadius: 5,
     borderWidth: 2,
-    borderColor: "#ddd",
   },
   loginButton: {
     alignItems: "center",
     justifyContent: "center",
-    padding: 16,
+    padding: 14,
+  },
+
+  summaryContainer: {
+    width: "100%",
+    borderRadius: 25,
+    paddingHorizontal: 23,
+    paddingTop: 30,
+    paddingBottom: 50,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.4,
+    shadowRadius: 7.84,
+    elevation: 1,
+    marginTop: 20,
+    display: "flex",
+    gap: 13,
   },
 });
