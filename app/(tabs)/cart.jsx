@@ -359,7 +359,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.4,
     shadowRadius: 7.84,
-    elevation: 1,
+    elevation: 5,
     margin: 10,
   },
   circleCheckbox: {

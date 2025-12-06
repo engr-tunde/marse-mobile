@@ -60,7 +60,7 @@ export default function SignUp() {
       if (idToken) {
         try {
           const result = await fetch(
-            `${process.env.EXPO_PUBLIC_API_BASE}/${GOOGLE_AUTH_REDIRECT}?idToken=${idToken}`
+            `${process.env.EXPO_PUBLIC_API_BASE}${GOOGLE_AUTH_REDIRECT}?idToken=${idToken}`
           );
           if (result.ok) {
             let responseData = await result.json();

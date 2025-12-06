@@ -63,6 +63,8 @@ export default function SignIn() {
   };
   const [request, response, promptAsync] = Google.useAuthRequest(GOOGLE_CONFIG);
 
+  console.log("response", response);
+
   const handleGoogleAuth = async () => {
     if (response?.type === "success") {
       const { authentication } = response;
@@ -70,8 +72,9 @@ export default function SignIn() {
       if (idToken) {
         try {
           const result = await fetch(
-            `${process.env.EXPO_PUBLIC_API_BASE}/${GOOGLE_AUTH_REDIRECT}?idToken=${idToken}`
+            `${process.env.EXPO_PUBLIC_API_BASE}${GOOGLE_AUTH_REDIRECT}?idToken=${idToken}`
           );
+          console.log("result", result);
           if (result.ok) {
             let responseData = await result.json();
             if (responseData?.access_token) {

@@ -53,7 +53,7 @@ export const homeStyles = StyleSheet.create({
     padding: 8,
     borderRadius: 8,
     overflow: "hidden",
-    elevation: 2,
+    elevation: 5,
     shadowRadius: 2,
     height: 270,
   },

@@ -162,7 +162,7 @@ export default function Help() {
                 backgroundColor: theme.uiBackground,
                 // borderWidth: 1,
                 // borderColor: theme.title,
-                elevation: 2,
+                elevation: 5,
                 shadowColor: "#000",
                 shadowOffset: { width: 2, height: 2 },
                 shadowOpacity: 0.2,

@@ -6,14 +6,7 @@ import { Colors } from "@/constants/Colors";
 import { useTheme } from "@/hooks/useTheme";
 import { globalStyles } from "@/styles/global";
 import AntDesign from "@expo/vector-icons/AntDesign";
-import {
-  Image,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  View,
-} from "react-native";
+import { Image, ScrollView, StatusBar, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const products = [
@@ -67,7 +60,9 @@ export default function Dinner() {
 
   const glStyles = globalStyles();
   return (
-    <SafeAreaView style={[glStyles.container, { backgroundColor: theme.uiBackground }]}>
+    <SafeAreaView
+      style={[glStyles.container, { backgroundColor: theme.uiBackground }]}
+    >
       <StatusBar
         backgroundColor={currentTheme === "dark" ? "#000" : "#fff"}
         barStyle={currentTheme === "dark" ? "light-content" : "dark-content"}
@@ -81,8 +76,7 @@ export default function Dinner() {
         />
         <FilterInput />
         <NormalText style={{ color: "#ddd" }}>
-          "Showing result for{" "}
-          <ThemedText>Dinner gown"</ThemedText>
+          "Showing result for <ThemedText>Dinner gown"</ThemedText>
         </NormalText>
         <View style={styles.containerBox}>
           <View style={styles.miniBox2}>
@@ -118,9 +112,15 @@ export default function Dinner() {
               <View style={styles.productCard}>
                 <Image source={item.image} style={styles.productImage} />
                 <View style={styles.productInfo}>
-                  <ThemedText style={styles.productName}>{item.name}</ThemedText>
-                  <NormalText style={styles.productBrand}>{item.brand}</NormalText>
-                  <ThemedText style={styles.productPrice}>{item.price}</ThemedText>
+                  <ThemedText style={styles.productName}>
+                    {item.name}
+                  </ThemedText>
+                  <NormalText style={styles.productBrand}>
+                    {item.brand}
+                  </NormalText>
+                  <ThemedText style={styles.productPrice}>
+                    {item.price}
+                  </ThemedText>
                 </View>
               </View>
             )}
@@ -144,7 +144,7 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 8,
     overflow: "hidden",
-    elevation: 2,
+    elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.2,

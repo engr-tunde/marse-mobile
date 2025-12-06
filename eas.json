@@ -18,7 +18,7 @@
     "preview": {
       "distribution": "internal",
       "env": {
-        "EXPO_PUBLIC_API_BASE": "https://marse-api-dev.delightfulsea-6d057c7f.centralus.azurecontainerapps.io",
+        "EXPO_PUBLIC_API_BASE": "https://dev.api.themrse.com",
         "EXPO_GOOGLE_AUTH_C_ID": "957989616867-alee84ofoh44fcc05t4414kv9e3p4u8n.apps.googleusercontent.com",
         "EXPO_PUBLIC_STRIPE_KEY": "pk_test_51RW2LvE8v5Iger8qmrxK6kRS0L3PzEzDEGnEhy7WjonjNGW3dl0fWTjFxbvH04ozzC6wEcDemK49LMXaOxeVcK8Q00JPXEPwgz"
       },
@@ -29,7 +29,7 @@
     "production": {
       "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_BASE": "https://marse-api-dev.delightfulsea-6d057c7f.centralus.azurecontainerapps.io",
+        "EXPO_PUBLIC_API_BASE": "https://dev.api.themrse.com",
         "EXPO_GOOGLE_AUTH_C_ID": "957989616867-alee84ofoh44fcc05t4414kv9e3p4u8n.apps.googleusercontent.com",
         "EXPO_PUBLIC_STRIPE_KEY": "pk_test_51RW2LvE8v5Iger8qmrxK6kRS0L3PzEzDEGnEhy7WjonjNGW3dl0fWTjFxbvH04ozzC6wEcDemK49LMXaOxeVcK8Q00JPXEPwgz"
       }
